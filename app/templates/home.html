@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI App Compiler</title>
+  <style>
+    :root {
+      --paper: #f4ede2;
+      --mist: rgba(255, 255, 255, 0.72);
+      --panel: rgba(255, 251, 247, 0.84);
+      --ink: #16202c;
+      --muted: rgba(22, 32, 44, 0.68);
+      --line: rgba(22, 32, 44, 0.12);
+      --accent: #b35f3d;
+      --accent-soft: rgba(179, 95, 61, 0.16);
+      --forest: #2d5c50;
+      --gold: #8e7a39;
+      --danger: #93403b;
+      --shadow: 0 24px 80px rgba(22, 32, 44, 0.12);
+      --display-font: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      --ui-font: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
+      --mono-font: Consolas, "SFMono-Regular", "Liberation Mono", Menlo, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: var(--ui-font);
+      background:
+        radial-gradient(circle at 12% 14%, rgba(179, 95, 61, 0.24), transparent 22%),
+        radial-gradient(circle at 82% 18%, rgba(45, 92, 80, 0.18), transparent 24%),
+        linear-gradient(145deg, #ede1d1 0%, #f8f4ee 42%, #ece3d6 100%);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    body::before {
+      background:
+        repeating-linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.22) 0,
+          rgba(255, 255, 255, 0.22) 1px,
+          transparent 1px,
+          transparent 90px
+        );
+      opacity: 0.3;
+    }
+
+    body::after {
+      background:
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent 12%, transparent 88%, rgba(22, 32, 44, 0.06));
+    }
+
+    main {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 28px 22px 42px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .hero-copy {
+      padding: 10px 2px 0;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(22, 32, 44, 0.1);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+    }
+
+    .hero h1 {
+      margin: 18px 0 14px;
+      max-width: 10ch;
+      font-family: var(--display-font);
+      font-size: clamp(3.3rem, 7vw, 6rem);
+      line-height: 0.92;
+      letter-spacing: -0.04em;
+      font-weight: 700;
+    }
+
+    .hero p {
+      max-width: 680px;
+      color: var(--muted);
+      font-size: 1.04rem;
+      line-height: 1.72;
+      margin: 0;
+    }
+
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .metric-tile,
+    .panel {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      border-radius: 30px;
+    }
+
+    .metric-tile {
+      padding: 18px 18px 16px;
+      min-height: 120px;
+      transform: translateY(0);
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .metric-tile:hover,
+    .panel:hover {
+      transform: translateY(-2px);
+    }
+
+    .metric-label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .metric-value {
+      font-family: var(--display-font);
+      font-size: 2.3rem;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .metric-copy {
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.94rem;
+    }
+
+    .status-stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .status-card,
+    .stage-card,
+    .composer,
+    .preview-panel,
+    .inspector {
+      padding: 24px;
+    }
+
+    .status-label,
+    .section-label {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .status-headline {
+      margin-top: 12px;
+      font-family: var(--display-font);
+      font-size: 2.15rem;
+      line-height: 1;
+    }
+
+    .status-copy {
+      margin: 12px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .pill-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 9px 13px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(22, 32, 44, 0.1);
+      font-size: 0.88rem;
+    }
+
+    .pill.warm {
+      background: var(--accent-soft);
+      border-color: rgba(179, 95, 61, 0.16);
+    }
+
+    .pill.good {
+      background: rgba(45, 92, 80, 0.14);
+      border-color: rgba(45, 92, 80, 0.18);
+    }
+
+    .pill.alert {
+      background: rgba(147, 64, 59, 0.12);
+      border-color: rgba(147, 64, 59, 0.18);
+    }
+
+    .stage-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stage-step {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 14px;
+      padding: 14px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.58);
+      border: 1px solid rgba(22, 32, 44, 0.08);
+      transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+    }
+
+    .stage-step.active {
+      border-color: rgba(179, 95, 61, 0.38);
+      background: rgba(255, 244, 238, 0.92);
+      transform: translateX(2px);
+    }
+
+    .stage-step.complete {
+      border-color: rgba(45, 92, 80, 0.28);
+      background: rgba(245, 255, 250, 0.84);
+    }
+
+    .stage-step.resting {
+      opacity: 0.72;
+    }
+
+    .stage-index {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: rgba(22, 32, 44, 0.06);
+      font-family: var(--display-font);
+      font-size: 1.1rem;
+    }
+
+    .stage-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .stage-note {
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.92rem;
+    }
+
+    .composer {
+      margin-top: 24px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: end;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .section-head h2,
+    .inspector h2,
+    .preview-panel h2 {
+      margin: 8px 0 0;
+      font-family: var(--display-font);
+      font-size: 2rem;
+      line-height: 1.02;
+      letter-spacing: -0.02em;
+    }
+
+    .section-head p,
+    .preview-panel p,
+    .inspector p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .sample-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .sample-chip,
+    .ghost-link,
+    .primary-button {
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .sample-chip {
+      padding: 10px 13px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(22, 32, 44, 0.1);
+      transition: background 160ms ease, transform 160ms ease;
+    }
+
+    .sample-chip:hover,
+    .ghost-link:hover,
+    .primary-button:hover {
+      transform: translateY(-1px);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      resize: vertical;
+      border-radius: 28px;
+      border: 1px solid rgba(22, 32, 44, 0.12);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(250, 246, 241, 0.88));
+      padding: 20px 22px;
+      font: inherit;
+      color: var(--ink);
+      line-height: 1.7;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .composer-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .primary-button {
+      padding: 14px 22px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #b35f3d, #8f4c30);
+      color: white;
+      box-shadow: 0 14px 32px rgba(179, 95, 61, 0.24);
+    }
+
+    .primary-button[disabled] {
+      opacity: 0.62;
+      cursor: wait;
+    }
+
+    .ghost-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(22, 32, 44, 0.1);
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .ghost-link.hidden {
+      display: none;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    .summary-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 16px 0 14px;
+      min-height: 40px;
+    }
+
+    pre {
+      margin: 0;
+      padding: 18px;
+      min-height: 260px;
+      overflow: auto;
+      border-radius: 24px;
+      border: 1px solid rgba(22, 32, 44, 0.1);
+      background: linear-gradient(180deg, rgba(249, 246, 240, 0.94), rgba(255, 255, 255, 0.76));
+      font-family: var(--mono-font);
+      font-size: 0.84rem;
+      line-height: 1.62;
+      color: rgba(22, 32, 44, 0.88);
+    }
+
+    .validation-list {
+      display: grid;
+      gap: 10px;
+      margin: 16px 0 14px;
+      min-height: 72px;
+    }
+
+    .validation-item {
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(22, 32, 44, 0.08);
+    }
+
+    .validation-item strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .validation-item.error {
+      border-color: rgba(147, 64, 59, 0.18);
+      background: rgba(255, 241, 240, 0.88);
+    }
+
+    .preview-panel {
+      margin-top: 24px;
+    }
+
+    .preview-shell {
+      display: grid;
+      gap: 16px;
+    }
+
+    .timing-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .timing-chip {
+      padding: 10px 12px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid rgba(22, 32, 44, 0.08);
+      font-size: 0.88rem;
+    }
+
+    .preview-empty {
+      display: grid;
+      place-items: center;
+      min-height: 420px;
+      border-radius: 28px;
+      border: 1px dashed rgba(22, 32, 44, 0.18);
+      background:
+        radial-gradient(circle at top right, rgba(179, 95, 61, 0.12), transparent 26%),
+        rgba(255, 255, 255, 0.58);
+      color: var(--muted);
+      text-align: center;
+      padding: 24px;
+    }
+
+    iframe {
+      width: 100%;
+      min-height: 720px;
+      border: 0;
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow: inset 0 0 0 1px rgba(22, 32, 44, 0.08);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 1080px) {
+      .hero,
+      .results-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      main {
+        padding-inline: 16px;
+      }
+
+      .hero h1 {
+        max-width: none;
+      }
+
+      .metric-row {
+        grid-template-columns: 1fr;
+      }
+
+      .composer-actions,
+      .section-head {
+        align-items: stretch;
+      }
+
+      iframe {
+        min-height: 560px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">AI Application Compiler</div>
+        <h1>Build apps with a compiler pipeline, not a one-shot prompt.</h1>
+        <p>
+          This demo turns natural language into a typed application spec, validates it across layers, repairs only the broken parts,
+          and then emits a real runnable workspace. The point is reliability and engineering discipline, not flashy text generation.
+        </p>
+        <div class="metric-row">
+          <article class="metric-tile">
+            <div class="metric-label">Compiler Shape</div>
+            <div class="metric-value">6</div>
+            <div class="metric-copy">Distinct stages, from intent extraction to executable runtime output.</div>
+          </article>
+          <article class="metric-tile">
+            <div class="metric-label">Validation Model</div>
+            <div class="metric-value">Typed</div>
+            <div class="metric-copy">DB, API, UI, and auth all pass through schema and consistency checks.</div>
+          </article>
+          <article class="metric-tile">
+            <div class="metric-label">Runtime Strategy</div>
+            <div class="metric-value">Config</div>
+            <div class="metric-copy">Generated apps render from structured config for steadier behavior than raw codegen.</div>
+          </article>
+        </div>
+      </div>
+
+      <div class="status-stack">
+        <article class="panel status-card">
+          <div class="status-label">Session status</div>
+          <div class="status-headline" id="status-headline">Ready to compile</div>
+          <p class="status-copy" id="status-copy">Drop in a product brief, then inspect the pipeline output and live runtime side by side.</p>
+          <div class="pill-row" id="meta"></div>
+        </article>
+
+        <article class="panel stage-card">
+          <div class="section-label">Pipeline trace</div>
+          <div class="stage-list" id="stage-list">
+            <div class="stage-step resting" data-stage="intent">
+              <div class="stage-index">1</div>
+              <div>
+                <div class="stage-title">Intent Extraction</div>
+                <div class="stage-note">Normalize the user request into a deterministic typed brief.</div>
+              </div>
+            </div>
+            <div class="stage-step resting" data-stage="architecture">
+              <div class="stage-index">2</div>
+              <div>
+                <div class="stage-title">Architecture Planner</div>
+                <div class="stage-note">Build the AST-like app design with entities, pages, roles, and flows.</div>
+              </div>
+            </div>
+            <div class="stage-step resting" data-stage="schema">
+              <div class="stage-index">3</div>
+              <div>
+                <div class="stage-title">Schema Generator</div>
+                <div class="stage-note">Split the output into isolated DB, API, UI, and auth layers.</div>
+              </div>
+            </div>
+            <div class="stage-step resting" data-stage="validation">
+              <div class="stage-index">4</div>
+              <div>
+                <div class="stage-title">Validation Engine</div>
+                <div class="stage-note">Check structure, permissions, field mappings, and cross-layer references.</div>
+              </div>
+            </div>
+            <div class="stage-step resting" data-stage="repair">
+              <div class="stage-index">5</div>
+              <div>
+                <div class="stage-title">Repair Engine</div>
+                <div class="stage-note">Patch only failing nodes instead of regenerating the whole application.</div>
+              </div>
+            </div>
+            <div class="stage-step resting" data-stage="runtime">
+              <div class="stage-index">6</div>
+              <div>
+                <div class="stage-title">Runtime Builder</div>
+                <div class="stage-note">Emit a SQLite-backed workspace with real preview routes and CRUD APIs.</div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel composer">
+      <div class="section-head">
+        <div>
+          <div class="section-label">Prompt workbench</div>
+          <h2>Write the product brief like a teammate would.</h2>
+          <p>The compiler handles structure, repair, and runtime generation after that.</p>
+        </div>
+        <div class="sample-row">
+          <button class="sample-chip" data-prompt="Build a CRM with login, contacts, tasks, and analytics for sales managers.">CRM</button>
+          <button class="sample-chip" data-prompt="Create an HRMS to manage employees, leave requests, approvals, and reports.">HRMS</button>
+          <button class="sample-chip" data-prompt="Build an LMS for courses, learners, enrollments, and progress dashboards.">LMS</button>
+          <button class="sample-chip" data-prompt="Generate an inventory system with SKUs, stock movements, suppliers, and warehouse analytics.">Inventory</button>
+        </div>
+      </div>
+      <textarea id="prompt">Build a CRM with login, contacts, tasks, and analytics for sales managers.</textarea>
+      <div class="composer-actions">
+        <button class="primary-button" id="compile-btn">Compile workspace</button>
+        <a class="ghost-link hidden" id="preview-link" href="#" target="_blank" rel="noreferrer">Open generated workspace</a>
+      </div>
+    </section>
+
+    <section class="results-grid">
+      <article class="panel inspector">
+        <div class="section-label">Stage output</div>
+        <h2>Intent extraction</h2>
+        <div class="summary-strip" id="intent-summary"></div>
+        <pre id="intent-view">Waiting for the first compile.</pre>
+      </article>
+
+      <article class="panel inspector">
+        <div class="section-label">Stage output</div>
+        <h2>Architecture design</h2>
+        <div class="summary-strip" id="architecture-summary"></div>
+        <pre id="architecture-view">The compiler will surface entities, pages, permissions, and flows here.</pre>
+      </article>
+
+      <article class="panel inspector">
+        <div class="section-label">Reliability</div>
+        <h2>Validation and repair</h2>
+        <div class="validation-list" id="validation-summary">
+          <div class="validation-item">
+            <strong>No report yet</strong>
+            Run a compile to inspect issues, repair activity, and final validation state.
+          </div>
+        </div>
+        <pre id="validation-view">Validation logs will appear here after compilation.</pre>
+      </article>
+    </section>
+
+    <section class="panel preview-panel">
+      <div class="section-head">
+        <div>
+          <div class="section-label">Executable output</div>
+          <h2>Generated runtime preview</h2>
+          <p>The compiled app shows up below as a live workspace, not just a JSON artifact.</p>
+        </div>
+        <div class="timing-strip" id="timing-strip"></div>
+      </div>
+      <div class="preview-shell">
+        <div class="preview-empty" id="preview-empty">
+          <div>
+            <div class="status-label">Runtime preview</div>
+            <h3 style="font-family: var(--display-font); font-size: 2rem; margin: 10px 0 8px;">Nothing compiled yet.</h3>
+            <p style="margin: 0; max-width: 480px;">Compile a prompt and the generated app will appear here inside the same workspace.</p>
+          </div>
+        </div>
+        <iframe id="runtime-frame" class="hidden" title="Generated runtime preview"></iframe>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const promptEl = document.getElementById("prompt");
+    const compileBtn = document.getElementById("compile-btn");
+    const statusHeadlineEl = document.getElementById("status-headline");
+    const statusCopyEl = document.getElementById("status-copy");
+    const metaEl = document.getElementById("meta");
+    const intentView = document.getElementById("intent-view");
+    const architectureView = document.getElementById("architecture-view");
+    const validationView = document.getElementById("validation-view");
+    const intentSummaryEl = document.getElementById("intent-summary");
+    const architectureSummaryEl = document.getElementById("architecture-summary");
+    const validationSummaryEl = document.getElementById("validation-summary");
+    const timingStripEl = document.getElementById("timing-strip");
+    const previewLinkEl = document.getElementById("preview-link");
+    const previewFrameEl = document.getElementById("runtime-frame");
+    const previewEmptyEl = document.getElementById("preview-empty");
+    const stageEls = Array.from(document.querySelectorAll("[data-stage]"));
+    const sampleButtons = Array.from(document.querySelectorAll("[data-prompt]"));
+
+    const stageOrder = ["intent", "architecture", "schema", "validation", "repair", "runtime"];
+    let stageInterval = null;
+
+    sampleButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        promptEl.value = button.dataset.prompt || "";
+      });
+    });
+
+    function createPill(text, tone = "warm") {
+      const pill = document.createElement("span");
+      pill.className = `pill ${tone}`;
+      pill.textContent = text;
+      return pill;
+    }
+
+    function resetStages() {
+      stageEls.forEach((element) => {
+        element.classList.remove("active", "complete");
+        element.classList.add("resting");
+      });
+    }
+
+    function setStageState(stageKey, state) {
+      const element = document.querySelector(`[data-stage="${stageKey}"]`);
+      if (!element) {
+        return;
+      }
+      element.classList.remove("active", "complete", "resting");
+      element.classList.add(state);
+    }
+
+    function startStageAnimation() {
+      clearInterval(stageInterval);
+      resetStages();
+      let index = 0;
+      setStageState(stageOrder[index], "active");
+      stageInterval = window.setInterval(() => {
+        setStageState(stageOrder[index], "complete");
+        index = (index + 1) % stageOrder.length;
+        setStageState(stageOrder[index], "active");
+      }, 650);
+    }
+
+    function stopStageAnimation(payload) {
+      clearInterval(stageInterval);
+      stageInterval = null;
+      ["intent", "architecture", "schema", "validation", "runtime"].forEach((stage) => setStageState(stage, "complete"));
+      if ((payload.repair_log || []).length) {
+        setStageState("repair", "complete");
+      } else {
+        setStageState("repair", "resting");
+      }
+    }
+
+    function setStatus(headline, copy) {
+      statusHeadlineEl.textContent = headline;
+      statusCopyEl.textContent = copy;
+    }
+
+    function fillContainerWithPills(container, values, tone = "warm") {
+      container.innerHTML = "";
+      values.forEach((value) => container.appendChild(createPill(value, tone)));
+    }
+
+    function renderIntentSummary(intent) {
+      fillContainerWithPills(intentSummaryEl, [
+        `Type: ${intent.app_type}`,
+        `Features: ${intent.features.length}`,
+        `Roles: ${intent.roles.length}`,
+        `Ambiguity: ${intent.ambiguity}`,
+      ]);
+    }
+
+    function renderArchitectureSummary(architecture) {
+      fillContainerWithPills(architectureSummaryEl, [
+        `Entities: ${architecture.entities.length}`,
+        `Pages: ${architecture.pages.length}`,
+        `Permissions: ${architecture.permissions.length}`,
+        `Flows: ${architecture.flows.length}`,
+      ], "good");
+    }
+
+    function renderValidationSummary(validation) {
+      validationSummaryEl.innerHTML = "";
+      const issues = validation.issues || [];
+      const errors = issues.filter((issue) => issue.severity === "error");
+
+      const headline = document.createElement("div");
+      headline.className = "validation-item";
+      headline.innerHTML = validation.passed
+        ? "<strong>Validation passed</strong>The bundle is internally consistent and the runtime is ready."
+        : "<strong>Validation has open issues</strong>The bundle still needs attention before it should be trusted.";
+      validationSummaryEl.appendChild(headline);
+
+      const repairItem = document.createElement("div");
+      repairItem.className = "validation-item";
+      repairItem.innerHTML = `<strong>Repair activity</strong>${validation.repair_attempts} repair round(s) recorded.`;
+      validationSummaryEl.appendChild(repairItem);
+
+      if (!issues.length) {
+        return;
+      }
+
+      issues.slice(0, 3).forEach((issue) => {
+        const issueEl = document.createElement("div");
+        issueEl.className = `validation-item ${issue.severity === "error" ? "error" : ""}`;
+        const strong = document.createElement("strong");
+        strong.textContent = `${issue.component.toUpperCase()} · ${issue.code}`;
+        const copy = document.createElement("div");
+        copy.textContent = issue.message;
+        issueEl.appendChild(strong);
+        issueEl.appendChild(copy);
+        validationSummaryEl.appendChild(issueEl);
+      });
+
+      if (errors.length > 3) {
+        const more = document.createElement("div");
+        more.className = "validation-item";
+        more.textContent = `${errors.length - 3} more issue(s) are listed in the raw validation log below.`;
+        validationSummaryEl.appendChild(more);
+      }
+    }
+
+    function renderTimingStrip(timings) {
+      timingStripEl.innerHTML = "";
+      (timings || []).slice(0, 8).forEach((timing) => {
+        const chip = document.createElement("span");
+        chip.className = "timing-chip";
+        chip.textContent = `${timing.stage.replaceAll("_", " ")} · ${timing.duration_ms} ms`;
+        timingStripEl.appendChild(chip);
+      });
+    }
+
+    function renderMeta(payload) {
+      metaEl.innerHTML = "";
+      metaEl.appendChild(createPill(`App ID ${payload.app_id}`, "warm"));
+      metaEl.appendChild(createPill(`${payload.bundle.db_schema.entities.length} entities`, "good"));
+      metaEl.appendChild(createPill(`${payload.bundle.ui_schema.pages.length} pages`, "good"));
+      metaEl.appendChild(createPill(`${payload.repair_log.length} repair step(s)`, payload.repair_log.length ? "alert" : "warm"));
+    }
+
+    async function compilePrompt() {
+      const prompt = promptEl.value.trim();
+      if (!prompt) {
+        setStatus("Need a prompt", "Write a short product brief first, then compile again.");
+        return;
+      }
+
+      compileBtn.disabled = true;
+      compileBtn.textContent = "Compiling...";
+      previewLinkEl.classList.add("hidden");
+      setStatus("Compiling now", "Running the pipeline across intent extraction, validation, repair, and runtime build.");
+      startStageAnimation();
+
+      try {
+        const response = await fetch("/compile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt }),
+        });
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload.detail || "Compile failed.");
+        }
+
+        stopStageAnimation(payload);
+        renderMeta(payload);
+        renderIntentSummary(payload.bundle.intent);
+        renderArchitectureSummary(payload.bundle.architecture);
+        renderValidationSummary(payload.validation);
+        renderTimingStrip(payload.timings);
+
+        intentView.textContent = JSON.stringify(payload.bundle.intent, null, 2);
+        architectureView.textContent = JSON.stringify(payload.bundle.architecture, null, 2);
+        validationView.textContent = JSON.stringify(payload.validation, null, 2);
+
+        previewFrameEl.src = payload.runtime.preview_path;
+        previewFrameEl.classList.remove("hidden");
+        previewEmptyEl.classList.add("hidden");
+        previewLinkEl.href = payload.runtime.preview_path;
+        previewLinkEl.classList.remove("hidden");
+
+        if (payload.validation.passed) {
+          setStatus("Runtime ready", "The generated workspace passed validation and is now live in the preview frame below.");
+        } else {
+          setStatus("Review recommended", "The compiler returned a runtime, but there are still open issues in the validation report.");
+        }
+      } catch (error) {
+        clearInterval(stageInterval);
+        resetStages();
+        setStatus("Compile failed", error.message || "Something went wrong while compiling.");
+      } finally {
+        compileBtn.disabled = false;
+        compileBtn.textContent = "Compile workspace";
+      }
+    }
+
+    compileBtn.addEventListener("click", compilePrompt);
+  </script>
+</body>
+</html>

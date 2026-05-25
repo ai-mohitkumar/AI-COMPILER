@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: ai-app-compiler
+    env: docker
+    autoDeploy: true
+    healthCheckPath: /healthz
+    disk:
+      name: ai-app-compiler-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: GENERATED_APPS_DIR
+        value: /data/apps
+      - key: WEB_CONCURRENCY
+        value: 1

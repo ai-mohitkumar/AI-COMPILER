@@ -1,0 +1,164 @@
+[
+  {
+    "id": "normal-crm",
+    "category": "normal",
+    "prompt": "Build a CRM with login, contact management, and analytics for sales managers.",
+    "expected_app_type": "CRM",
+    "expected_entities": ["contacts", "activities"],
+    "expected_features": ["auth", "analytics"]
+  },
+  {
+    "id": "normal-hrms",
+    "category": "normal",
+    "prompt": "Create an HRMS to manage employees, leave requests, approvals, and reports.",
+    "expected_app_type": "HRMS",
+    "expected_entities": ["employees", "leave_requests"],
+    "expected_features": ["approvals", "analytics"]
+  },
+  {
+    "id": "normal-lms",
+    "category": "normal",
+    "prompt": "Build an LMS for courses, learners, enrollments, and progress dashboards.",
+    "expected_app_type": "LMS",
+    "expected_entities": ["courses", "learners", "enrollments"],
+    "expected_features": ["analytics", "search"]
+  },
+  {
+    "id": "normal-inventory",
+    "category": "normal",
+    "prompt": "Generate an inventory system with SKUs, stock movements, suppliers, and warehouse analytics.",
+    "expected_app_type": "Inventory System",
+    "expected_entities": ["products", "suppliers", "stock_movements"],
+    "expected_features": ["inventory_tracking", "analytics"]
+  },
+  {
+    "id": "normal-ecommerce",
+    "category": "normal",
+    "prompt": "Create an ecommerce admin app for products, customers, orders, and reporting.",
+    "expected_app_type": "Ecommerce",
+    "expected_entities": ["products", "customers", "orders"],
+    "expected_features": ["commerce", "analytics"]
+  },
+  {
+    "id": "normal-project",
+    "category": "normal",
+    "prompt": "Build a project management tool with projects, tasks, comments, and dashboards.",
+    "expected_app_type": "Project Management",
+    "expected_entities": ["projects", "tasks"],
+    "expected_features": ["tasks", "comments", "analytics"]
+  },
+  {
+    "id": "normal-sales-ops",
+    "category": "normal",
+    "prompt": "Build a sales operations workspace to manage leads, follow ups, and search.",
+    "expected_app_type": "CRM",
+    "expected_entities": ["contacts", "activities"],
+    "expected_features": ["auth", "search"]
+  },
+  {
+    "id": "normal-training",
+    "category": "normal",
+    "prompt": "Create a training portal with courses, learner cohorts, and instructor reporting.",
+    "expected_app_type": "LMS",
+    "expected_entities": ["courses", "learners", "enrollments"],
+    "expected_features": ["analytics"]
+  },
+  {
+    "id": "normal-warehouse",
+    "category": "normal",
+    "prompt": "Need a warehouse management app for inventory, suppliers, and stock alerts.",
+    "expected_app_type": "Inventory System",
+    "expected_entities": ["products", "suppliers", "stock_movements"],
+    "expected_features": ["inventory_tracking"]
+  },
+  {
+    "id": "normal-ops",
+    "category": "normal",
+    "prompt": "Build an operations workspace to manage records, work items, and dashboard visibility.",
+    "expected_app_type": "Operations Workspace",
+    "expected_entities": ["records", "work_items"],
+    "expected_features": ["analytics", "search"]
+  },
+  {
+    "id": "edge-ambiguous-team",
+    "category": "edge",
+    "prompt": "Build something for managing teams.",
+    "expected_app_type": "Operations Workspace",
+    "expected_entities": ["records", "work_items"],
+    "expected_features": ["auth"]
+  },
+  {
+    "id": "edge-conflict-no-auth",
+    "category": "edge",
+    "prompt": "Build a CRM with no login but role-based permissions and manager approvals.",
+    "expected_app_type": "CRM",
+    "expected_entities": ["contacts", "activities"],
+    "expected_features": ["auth", "approvals"],
+    "should_repair": true
+  },
+  {
+    "id": "edge-incomplete-ecommerce",
+    "category": "edge",
+    "prompt": "Build an ecommerce app.",
+    "expected_app_type": "Ecommerce",
+    "expected_entities": ["products", "customers", "orders"],
+    "expected_features": ["commerce"]
+  },
+  {
+    "id": "edge-read-only-hr",
+    "category": "edge",
+    "prompt": "Create a read only HR dashboard for employees and leave requests.",
+    "expected_app_type": "HRMS",
+    "expected_entities": ["employees", "leave_requests"],
+    "expected_features": ["analytics"]
+  },
+  {
+    "id": "edge-single-page",
+    "category": "edge",
+    "prompt": "Build a single page inventory workspace for products and stock overview.",
+    "expected_app_type": "Inventory System",
+    "expected_entities": ["products", "suppliers", "stock_movements"],
+    "expected_features": ["inventory_tracking"]
+  },
+  {
+    "id": "edge-no-domain",
+    "category": "edge",
+    "prompt": "Need an app to keep track of things and activity.",
+    "expected_app_type": "Operations Workspace",
+    "expected_entities": ["records", "work_items"],
+    "expected_features": ["auth"]
+  },
+  {
+    "id": "edge-mobile",
+    "category": "edge",
+    "prompt": "Build a mobile-friendly project app for tasks, statuses, and analytics.",
+    "expected_app_type": "Project Management",
+    "expected_entities": ["projects", "tasks"],
+    "expected_features": ["tasks", "analytics"]
+  },
+  {
+    "id": "edge-no-login-lms",
+    "category": "edge",
+    "prompt": "Create a learning tracker without login for students and instructors.",
+    "expected_app_type": "LMS",
+    "expected_entities": ["courses", "learners", "enrollments"],
+    "expected_features": ["auth"],
+    "should_repair": true
+  },
+  {
+    "id": "edge-customer-store",
+    "category": "edge",
+    "prompt": "Need a store app for customer orders, but keep it simple.",
+    "expected_app_type": "Ecommerce",
+    "expected_entities": ["products", "customers", "orders"],
+    "expected_features": ["commerce"]
+  },
+  {
+    "id": "edge-short-crm",
+    "category": "edge",
+    "prompt": "CRM app",
+    "expected_app_type": "CRM",
+    "expected_entities": ["contacts", "activities"],
+    "expected_features": ["auth"]
+  }
+]

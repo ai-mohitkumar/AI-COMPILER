@@ -1,0 +1,14 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: production
+      GENERATED_APPS_DIR: /data/apps
+      WEB_CONCURRENCY: 1
+    volumes:
+      - compiler-data:/data
+
+volumes:
+  compiler-data:

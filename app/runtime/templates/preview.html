@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>__APP_NAME__ Preview</title>
+  <style>
+    :root {
+      --paper: #f5efe5;
+      --panel: rgba(255, 252, 248, 0.84);
+      --surface: rgba(255, 255, 255, 0.9);
+      --ink: #182028;
+      --muted: rgba(24, 32, 40, 0.66);
+      --line: rgba(24, 32, 40, 0.1);
+      --clay: #b85c38;
+      --sage: #39584f;
+      --ochre: #8d7742;
+      --shadow: 0 24px 72px rgba(24, 32, 40, 0.12);
+      --display-font: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      --ui-font: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
+      --mono-font: Consolas, "SFMono-Regular", "Liberation Mono", Menlo, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: var(--ui-font);
+      background:
+        radial-gradient(circle at top left, rgba(184, 92, 56, 0.22), transparent 26%),
+        radial-gradient(circle at bottom right, rgba(57, 88, 79, 0.18), transparent 28%),
+        linear-gradient(135deg, #ede3d4 0%, #f8f4ee 42%, #ebe0cf 100%);
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.2) 0,
+          rgba(255, 255, 255, 0.2) 1px,
+          transparent 1px,
+          transparent 78px
+        );
+      opacity: 0.28;
+    }
+
+    .frame {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .masthead {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: end;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.58);
+      border: 1px solid rgba(24, 32, 40, 0.08);
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      font-size: 0.72rem;
+    }
+
+    h1 {
+      margin: 16px 0 8px;
+      font-family: var(--display-font);
+      font-size: clamp(2.8rem, 6vw, 4.8rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+    }
+
+    .lede {
+      margin: 0;
+      max-width: 720px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .mast-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .select-wrap,
+    .ghost-link,
+    .tag,
+    .stat-card,
+    .component-card,
+    .rail-card,
+    .page-hero,
+    .empty {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      border-radius: 28px;
+    }
+
+    .select-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+    }
+
+    label {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    select,
+    input,
+    button {
+      font: inherit;
+    }
+
+    select {
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      min-width: 110px;
+    }
+
+    .ghost-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      text-decoration: none;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 290px minmax(0, 1fr);
+      gap: 22px;
+    }
+
+    .rail {
+      display: grid;
+      gap: 18px;
+      align-content: start;
+      position: sticky;
+      top: 18px;
+      height: fit-content;
+    }
+
+    .rail-card {
+      padding: 18px;
+    }
+
+    .rail-title,
+    .overline {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .nav-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .nav-button {
+      width: 100%;
+      border: 0;
+      padding: 14px 16px;
+      border-radius: 20px;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--ink);
+      cursor: pointer;
+      transition: transform 170ms ease, background 170ms ease;
+    }
+
+    .nav-button:hover {
+      transform: translateX(2px);
+    }
+
+    .nav-button.active {
+      background: linear-gradient(135deg, rgba(184, 92, 56, 0.2), rgba(255, 255, 255, 0.92));
+      border: 1px solid rgba(184, 92, 56, 0.18);
+    }
+
+    .tag-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.8);
+      font-size: 0.88rem;
+    }
+
+    .canvas {
+      display: grid;
+      gap: 18px;
+    }
+
+    .page {
+      display: none;
+      animation: drift 240ms ease;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .page-hero {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    .page-title {
+      margin: 10px 0 8px;
+      font-family: var(--display-font);
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      line-height: 0.98;
+    }
+
+    .page-copy {
+      margin: 0;
+      max-width: 700px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .page-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: end;
+    }
+
+    .page-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 18px;
+    }
+
+    .component-card {
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.76);
+    }
+
+    .component-title {
+      margin: 10px 0 6px;
+      font-family: var(--display-font);
+      font-size: 1.6rem;
+      line-height: 1.02;
+    }
+
+    .component-copy {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stat-card {
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.86);
+    }
+
+    .stat-card .count {
+      font-family: var(--display-font);
+      font-size: 2rem;
+      line-height: 1;
+      margin: 8px 0 6px;
+    }
+
+    .stat-bar {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(24, 32, 40, 0.08);
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .stat-bar span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--clay), var(--sage));
+    }
+
+    .table-shell {
+      margin-top: 18px;
+      overflow: auto;
+      border-radius: 22px;
+      border: 1px solid rgba(24, 32, 40, 0.08);
+      background: rgba(250, 248, 244, 0.9);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 540px;
+    }
+
+    th,
+    td {
+      padding: 13px 14px;
+      text-align: left;
+      border-bottom: 1px solid rgba(24, 32, 40, 0.08);
+      vertical-align: top;
+    }
+
+    th {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    td {
+      font-size: 0.94rem;
+      line-height: 1.45;
+    }
+
+    .code {
+      font-family: var(--mono-font);
+      font-size: 0.82rem;
+    }
+
+    form {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field span {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    input {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(24, 32, 40, 0.12);
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--ink);
+    }
+
+    .action-button {
+      border: 0;
+      border-radius: 999px;
+      padding: 13px 16px;
+      cursor: pointer;
+      color: white;
+      background: linear-gradient(135deg, #b85c38, #8c4b32);
+      box-shadow: 0 14px 30px rgba(184, 92, 56, 0.22);
+    }
+
+    .form-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .empty {
+      display: grid;
+      place-items: center;
+      text-align: center;
+      min-height: 180px;
+      padding: 24px;
+      margin-top: 18px;
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .note-box {
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px dashed rgba(24, 32, 40, 0.16);
+      background: rgba(255, 255, 255, 0.66);
+      margin-top: 18px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    @keyframes drift {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .rail {
+        position: static;
+      }
+
+      .page-hero {
+        grid-template-columns: 1fr;
+      }
+
+      .page-meta {
+        justify-content: start;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .frame {
+        padding: 16px;
+      }
+
+      h1 {
+        font-size: clamp(2.5rem, 11vw, 3.6rem);
+      }
+
+      .page-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <header class="masthead">
+      <div>
+        <div class="eyebrow">Generated workspace</div>
+        <h1>__APP_NAME__</h1>
+        <p class="lede">Config-driven preview for build <strong>__APP_ID__</strong>. The layout is assembled from validated UI schema, role-aware API routes, and a live SQLite runtime.</p>
+      </div>
+      <div class="mast-controls">
+        <div class="select-wrap">
+          <label for="role-select">Role</label>
+          <select id="role-select"></select>
+        </div>
+        <a href="__PREVIEW_PATH__" class="ghost-link">Refresh preview</a>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <aside class="rail">
+        <section class="rail-card">
+          <div class="rail-title">Navigation</div>
+          <div class="nav-list" id="nav"></div>
+        </section>
+
+        <section class="rail-card">
+          <div class="rail-title">Runtime details</div>
+          <div class="tag-row">
+            <span class="tag">API __API_BASE_PATH__</span>
+            <span class="tag">Auth __AUTH_MODE__</span>
+            <span class="tag">Roles __ROLE_COUNT__</span>
+          </div>
+          <div class="note-box">
+            This preview intentionally favors structure and reliability over bespoke page-by-page code generation.
+          </div>
+        </section>
+      </aside>
+
+      <main class="canvas" id="app"></main>
+    </div>
+  </div>
+
+  <script>
+    const uiSchema = __UI_PAYLOAD__;
+    const authSchema = __AUTH_PAYLOAD__;
+    const apiBasePath = "__API_BASE_PATH__";
+    const appRoot = document.getElementById("app");
+    const navRoot = document.getElementById("nav");
+    const roleSelect = document.getElementById("role-select");
+    let currentPage = null;
+
+    authSchema.roles.forEach((role) => {
+      const option = document.createElement("option");
+      option.value = role.name;
+      option.textContent = role.name;
+      roleSelect.appendChild(option);
+    });
+    roleSelect.value = authSchema.default_role;
+
+    roleSelect.addEventListener("change", () => {
+      renderWorkspace(currentPage || uiSchema.pages[0]?.name || null);
+    });
+
+    function stripApiPrefix(value) {
+      return (value || "").replace(/^\/api/, "");
+    }
+
+    function withRole(url) {
+      if (!url) {
+        return null;
+      }
+      const role = encodeURIComponent(roleSelect.value || authSchema.default_role);
+      return `${apiBasePath}${stripApiPrefix(url)}${url.includes("?") ? "&" : "?"}role=${role}`;
+    }
+
+    function make(tag, className, text) {
+      const element = document.createElement(tag);
+      if (className) {
+        element.className = className;
+      }
+      if (text !== undefined) {
+        element.textContent = text;
+      }
+      return element;
+    }
+
+    function describePage(page) {
+      if (page.page_type === "dashboard") {
+        return "A quick operational read on the generated system, with the most useful activity surfaced first.";
+      }
+      if (page.page_type === "analytics") {
+        return "Entity-level volume and system shape pulled directly from the runtime.";
+      }
+      return "Browse records, review the generated schema in action, and create new entries without leaving the page.";
+    }
+
+    function createPageHero(page) {
+      const hero = make("section", "page-hero");
+      const copy = make("div");
+      copy.appendChild(make("div", "overline", page.page_type));
+      copy.appendChild(make("h2", "page-title", page.title));
+      copy.appendChild(make("p", "page-copy", describePage(page)));
+      hero.appendChild(copy);
+
+      const meta = make("div", "page-meta");
+      meta.appendChild(make("span", "tag", `Current role ${roleSelect.value}`));
+      meta.appendChild(make("span", "tag", `Components ${page.components.length}`));
+      if (page.required_permissions.length) {
+        meta.appendChild(make("span", "tag", `Needs ${page.required_permissions.join(", ")}`));
+      }
+      hero.appendChild(meta);
+      return hero;
+    }
+
+    function buildMetricCards(rows) {
+      const grid = make("div", "metric-grid");
+      const max = Math.max(...rows.map((row) => Number(row.count) || 0), 1);
+      rows.forEach((row) => {
+        const card = make("div", "stat-card");
+        card.appendChild(make("div", "overline", row.entity));
+        card.appendChild(make("div", "count", String(row.count)));
+        card.appendChild(make("div", "", "records"));
+        const bar = make("div", "stat-bar");
+        const fill = make("span");
+        fill.style.width = `${Math.max(18, Math.round((Number(row.count) || 0) / max * 100))}%`;
+        bar.appendChild(fill);
+        card.appendChild(bar);
+        grid.appendChild(card);
+      });
+      return grid;
+    }
+
+    function createComponentCard(component) {
+      const card = make("article", "component-card");
+      card.appendChild(make("div", "overline", component.type));
+      card.appendChild(make("h3", "component-title", component.title));
+
+      const copyMap = {
+        nav: "A lightweight guide rail that keeps the generated workspace easy to move through.",
+        stats: "Live aggregate signals pulled from the generated runtime.",
+        chart: "A compact visual readout of entity volume across the system.",
+        table: "Records rendered straight from the runtime API with generated columns.",
+        form: "A config-driven create flow with sensible defaults and typed field handling.",
+        detail: "Focused record view generated from the shared schema.",
+        banner: "Context and guidance produced from the compiler output.",
+      };
+      card.appendChild(make("p", "component-copy", copyMap[component.type] || "Generated from the validated UI schema."));
+
+      const tags = make("div", "tag-row");
+      if (component.entity) {
+        tags.appendChild(make("span", "tag", `Entity ${component.entity}`));
+      }
+      if (component.visible_to_roles?.length) {
+        tags.appendChild(make("span", "tag", `Visible to ${component.visible_to_roles.join(", ")}`));
+      }
+      if (tags.childNodes.length) {
+        card.appendChild(tags);
+      }
+      return card;
+    }
+
+    async function attachAnalytics(card, component) {
+      const url = withRole(component.data_source);
+      if (!url) {
+        card.appendChild(make("div", "empty", "No analytics source configured."));
+        return;
+      }
+
+      const placeholder = make("div", "empty", "Loading analytics...");
+      card.appendChild(placeholder);
+      try {
+        const response = await fetch(url);
+        const rows = await response.json();
+        placeholder.replaceWith(buildMetricCards(rows));
+      } catch {
+        placeholder.textContent = "Unable to load analytics.";
+      }
+    }
+
+    async function attachTable(card, component) {
+      const url = withRole(component.data_source);
+      if (!url) {
+        card.appendChild(make("div", "empty", "No data source configured."));
+        return;
+      }
+
+      const shell = make("div", "table-shell");
+      const table = document.createElement("table");
+      const thead = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+      component.fields.forEach((field) => {
+        const th = document.createElement("th");
+        th.textContent = field;
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+      const tbody = document.createElement("tbody");
+      table.appendChild(tbody);
+      shell.appendChild(table);
+      card.appendChild(shell);
+
+      try {
+        const response = await fetch(url);
+        const rows = await response.json();
+        if (!rows.length) {
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.colSpan = component.fields.length || 1;
+          cell.textContent = "No records available yet.";
+          row.appendChild(cell);
+          tbody.appendChild(row);
+          return;
+        }
+        rows.forEach((item) => {
+          const row = document.createElement("tr");
+          component.fields.forEach((field) => {
+            const cell = document.createElement("td");
+            cell.className = field === "id" ? "code" : "";
+            cell.textContent = item[field] ?? "";
+            row.appendChild(cell);
+          });
+          tbody.appendChild(row);
+        });
+      } catch {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = component.fields.length || 1;
+        cell.textContent = "Unable to load table data.";
+        row.appendChild(cell);
+        tbody.appendChild(row);
+      }
+    }
+
+    function fallbackValue(fieldName) {
+      return fieldName.replaceAll("_", " ").replace(/\b\w/g, (match) => match.toUpperCase());
+    }
+
+    function attachForm(card, component) {
+      const form = document.createElement("form");
+      const note = make("div", "form-note", "Submitting this form writes directly into the generated SQLite runtime.");
+
+      component.fields.forEach((field) => {
+        const wrapper = make("label", "field");
+        wrapper.appendChild(make("span", "", field.replaceAll("_", " ")));
+        const input = document.createElement("input");
+        input.name = field;
+        input.placeholder = fallbackValue(field);
+        wrapper.appendChild(input);
+        form.appendChild(wrapper);
+      });
+
+      const submit = make("button", "action-button", `Create ${component.entity || "record"}`);
+      submit.type = "submit";
+      form.appendChild(submit);
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const actionUrl = withRole(component.action_route);
+        if (!actionUrl) {
+          note.textContent = "No action route configured for this form.";
+          return;
+        }
+
+        const payload = Object.fromEntries(new FormData(form).entries());
+        try {
+          const response = await fetch(actionUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!response.ok) {
+            throw new Error("The runtime rejected the new record.");
+          }
+          note.textContent = "Saved. The page is refreshing to pull the updated runtime data.";
+          window.setTimeout(() => renderWorkspace(currentPage), 500);
+        } catch {
+          note.textContent = "Unable to save this record right now.";
+        }
+      });
+
+      card.appendChild(form);
+      card.appendChild(note);
+    }
+
+    function attachNavNote(card) {
+      const note = make("div", "note-box", "Use the left rail to move between generated pages. The active role changes what the runtime can fetch.");
+      card.appendChild(note);
+    }
+
+    async function buildComponent(component) {
+      const card = createComponentCard(component);
+      if (component.type === "stats" || component.type === "chart") {
+        await attachAnalytics(card, component);
+      } else if (component.type === "table") {
+        await attachTable(card, component);
+      } else if (component.type === "form") {
+        attachForm(card, component);
+      } else if (component.type === "nav") {
+        attachNavNote(card);
+      } else {
+        card.appendChild(make("div", "note-box", "This block is available in the schema, even if the current runtime uses a lightweight generic renderer."));
+      }
+      return card;
+    }
+
+    async function createPage(page) {
+      const section = make("section", "page");
+      section.id = `page-${page.name}`;
+      section.appendChild(createPageHero(page));
+
+      const grid = make("div", "page-grid");
+      for (const component of page.components) {
+        const card = await buildComponent(component);
+        grid.appendChild(card);
+      }
+      section.appendChild(grid);
+      return section;
+    }
+
+    function renderNav(activePageName) {
+      navRoot.innerHTML = "";
+      uiSchema.pages.forEach((page) => {
+        const button = make("button", `nav-button ${page.name === activePageName ? "active" : ""}`, page.title);
+        button.addEventListener("click", () => renderWorkspace(page.name));
+        navRoot.appendChild(button);
+      });
+    }
+
+    async function renderWorkspace(targetPageName) {
+      if (!uiSchema.pages.length) {
+        appRoot.innerHTML = "";
+        appRoot.appendChild(make("div", "empty", "No pages are available in this runtime."));
+        return;
+      }
+
+      currentPage = targetPageName || uiSchema.pages[0].name;
+      renderNav(currentPage);
+      appRoot.innerHTML = "";
+
+      for (const page of uiSchema.pages) {
+        const section = await createPage(page);
+        if (page.name === currentPage) {
+          section.classList.add("active");
+        }
+        appRoot.appendChild(section);
+      }
+    }
+
+    renderWorkspace(uiSchema.pages[0]?.name || null);
+  </script>
+</body>
+</html>
