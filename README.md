@@ -2,6 +2,12 @@
 
 This project implements a compiler-style pipeline that turns natural language into a validated, repairable, executable mini application.
 
+## Live Demo
+
+- App: https://ai-compiler-a56o.onrender.com
+- Health check: https://ai-compiler-a56o.onrender.com/healthz
+- API docs: https://ai-compiler-a56o.onrender.com/docs
+
 ## What it does
 
 1. Extracts structured intent from a prompt.
